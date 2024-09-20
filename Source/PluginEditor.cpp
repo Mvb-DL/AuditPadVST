@@ -1,21 +1,20 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 
+// Konstruktor des Editors
 SimpleAudioProcessorEditor::SimpleAudioProcessorEditor(SimpleAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p), displayText("Press Space"), isSpacePressed(false)
+    : AudioProcessorEditor(&p), audioProcessor(p), listBoxModel(p), displayText("Press Space"), isSpacePressed(false)
 {
     setSize(400, 300); // Fenstergröße des Editors
 
     // TextEditor initialisieren
-    textEditor.setMultiLine(true); // Mehrzeiliges Textfeld
-    textEditor.setReturnKeyStartsNewLine(true); // Eingabetaste startet eine neue Zeile
-    textEditor.setText("Bitte Text eingeben..."); // Standardtext im Textfeld
-    textEditor.setColour(juce::TextEditor::backgroundColourId, juce::Colours::black); // Hintergrundfarbe
-    textEditor.setColour(juce::TextEditor::textColourId, juce::Colours::white); // Textfarbe
-    textEditor.setColour(juce::TextEditor::outlineColourId, juce::Colours::grey); // Rahmenfarbe
-
-    // TextEditor Listener hinzufügen
-    textEditor.addListener(this); // Fügen Sie diesen Editor als Listener hinzu
+    textEditor.setMultiLine(true);
+    textEditor.setReturnKeyStartsNewLine(true);
+    textEditor.setText("Bitte Text eingeben...");
+    textEditor.setColour(juce::TextEditor::backgroundColourId, juce::Colours::black);
+    textEditor.setColour(juce::TextEditor::textColourId, juce::Colours::white);
+    textEditor.setColour(juce::TextEditor::outlineColourId, juce::Colours::grey);
+    textEditor.addListener(this);
 
     // Save-Button initialisieren und konfigurieren
     saveButton.setButtonText("Speichern");
@@ -27,93 +26,89 @@ SimpleAudioProcessorEditor::SimpleAudioProcessorEditor(SimpleAudioProcessor& p)
 
         if (!userInput.isEmpty())
         {
-            audioProcessor.addTimestampWithText(currentTime, currentSample, userInput); // Zeitstempel und Text speichern
-            textEditor.clear(); // Textfeld nach dem Speichern leeren
-
-            // Zeitstempel und Text im Label anzeigen
+            audioProcessor.addTimestampWithText(currentTime, currentSample, userInput);
+            textEditor.clear(); 
             displayLabel.setText("Gespeichert: [ Time: " + juce::String(currentTime, 2) + "s. Sample: " + juce::String(currentSample) + " ] Input: " + userInput, juce::dontSendNotification);
 
-            // TextEditor und Save-Button nach dem Speichern ausblenden
             textEditor.setVisible(false);
             saveButton.setVisible(false);
-            displayText = "Press Space"; // Hinweistext zurücksetzen
-            isSpacePressed = false; // Status-Flag zurücksetzen
+            displayText = "Press Space";
+            isSpacePressed = false;
 
-            repaint(); // Neu zeichnen, um den neuen Zustand anzuzeigen
+            listBox.updateContent(); // Aktualisieren der ListBox, wenn ein neuer Eintrag hinzugefügt wurde
+            repaint();
         }
     };
 
     // Label zur Anzeige des gespeicherten Textes initialisieren
-    displayLabel.setText("", juce::dontSendNotification); // Initialer Text
-    displayLabel.setColour(juce::Label::textColourId, juce::Colours::white); // Textfarbe
-    displayLabel.setFont(15.0f); // Schriftgröße
-    displayLabel.setJustificationType(juce::Justification::centred); // Zentrierter Text
-    addAndMakeVisible(displayLabel); // Label sichtbar machen
+    displayLabel.setText("", juce::dontSendNotification);
+    displayLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    displayLabel.setFont(15.0f);
+    displayLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(displayLabel);
 
-    // Ermöglicht die Tastaturerfassung
+    // ListBox initialisieren und hinzufügen
+    listBox.setModel(&listBoxModel); // Setzt das ListBoxModel, das in der Header-Datei definiert wurde
+    addAndMakeVisible(listBox);
+
     setWantsKeyboardFocus(true);
-    grabKeyboardFocus(); // Sicherstellen, dass der Editor den Fokus hat
+    grabKeyboardFocus();
 }
 
 SimpleAudioProcessorEditor::~SimpleAudioProcessorEditor()
 {
-    textEditor.removeListener(this); // Listener entfernen, wenn der Editor zerstört wird
+    textEditor.removeListener(this);
 }
 
 void SimpleAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::black); // Hintergrundfarbe des Editors
-
-    g.setColour(juce::Colours::white); // Textfarbe auf Weiß setzen
-    g.setFont(15.0f); // Schriftgröße setzen
-
-    g.drawFittedText(displayText, getLocalBounds(), juce::Justification::centred, 1); // Display-Text zentriert zeichnen
+    g.fillAll(juce::Colours::black);
+    g.setColour(juce::Colours::white);
+    g.setFont(15.0f);
+    g.drawFittedText(displayText, getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void SimpleAudioProcessorEditor::resized()
 {
-    // TextEditor und Save-Button positionieren
-    textEditor.setBounds(10, 10, getWidth() - 20, getHeight() - 100); // TextEditor mit Rand
-    saveButton.setBounds(10, getHeight() - 80, getWidth() - 20, 30); // Save-Button unter dem TextEditor
-    displayLabel.setBounds(10, getHeight() - 40, getWidth() - 20, 30); // Label zur Anzeige des gespeicherten Texts
+    textEditor.setBounds(10, 10, getWidth() - 20, 50);
+    saveButton.setBounds(10, 70, getWidth() - 20, 30);
+    displayLabel.setBounds(10, 110, getWidth() - 20, 30);
+    listBox.setBounds(10, 250, getWidth() - 20, getHeight() - 260); // ListBox für gespeicherte Einträge
 }
 
 bool SimpleAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
 {
-    if (key == juce::KeyPress::spaceKey)  // Überprüfen, ob die Leertaste gedrückt wurde
+    if (key == juce::KeyPress::spaceKey)
     {
-        if (!isSpacePressed) // Wenn Leertaste zum ersten Mal gedrückt wurde
-        {   
-            
-            addAndMakeVisible(textEditor); 
-            addAndMakeVisible(saveButton);
-            
-            
-            textEditor.setVisible(true); // TextEditor sichtbar machen
-            saveButton.setVisible(true); // Save-Button sichtbar machen
-            textEditor.grabKeyboardFocus(); // Tastaturfokus auf TextEditor setzen
-            displayText = "Geben Sie Text ein und klicken Sie auf Speichern"; // Hinweistext ändern
-            isSpacePressed = true; // Status-Flag setzen
-        }
-        else 
+        if (!isSpacePressed)
         {
-            textEditor.setVisible(false); // TextEditor unsichtbar machen
-            saveButton.setVisible(false); // Save-Button unsichtbar machen
-            displayText = "Press Space"; // Hinweistext zurücksetzen
-            isSpacePressed = false; // Status-Flag zurücksetzen
+            addAndMakeVisible(textEditor);
+            addAndMakeVisible(saveButton);
+
+            textEditor.setVisible(true);
+            saveButton.setVisible(true);
+            textEditor.grabKeyboardFocus();
+            displayText = "Geben Sie Text ein und klicken Sie auf Speichern";
+            isSpacePressed = true;
+        }
+        else
+        {
+            textEditor.setVisible(false);
+            saveButton.setVisible(false);
+            displayText = "Press Space";
+            isSpacePressed = false;
         }
 
-        repaint();  // Neu zeichnen, um den neuen Zustand anzuzeigen
-
-        return true;  // Signalisiert, dass die Taste verarbeitet wurde
+        repaint();
+        return true;
     }
 
-    return false;  // Andere Tasten werden nicht verarbeitet
+    return false;
 }
 
 void SimpleAudioProcessorEditor::buttonClicked(juce::Button* button)
 {
-    if (button == &saveButton) // Wenn der Save-Button geklickt wurde
+    if (button == &saveButton)
     {
         double currentTime = audioProcessor.getCurrentTimeInSeconds();
         int currentSample = audioProcessor.getCurrentSamples();
@@ -122,26 +117,25 @@ void SimpleAudioProcessorEditor::buttonClicked(juce::Button* button)
         if (!userInput.isEmpty())
         {
             audioProcessor.addTimestampWithText(currentTime, currentSample, userInput);
-            textEditor.clear(); // Textfeld nach dem Speichern leeren
+            textEditor.clear();
 
-            // Zeitstempel und Text im Label anzeigen
             displayLabel.setText("Gespeichert: [ Time: " + juce::String(currentTime, 2) + "s. Sample: " + juce::String(currentSample) + " ] Input: " + userInput, juce::dontSendNotification);
 
-            // TextEditor und Save-Button ausblenden
             textEditor.setVisible(false);
             saveButton.setVisible(false);
-            displayText = "Press Space"; // Hinweistext zurücksetzen
-            isSpacePressed = false; // Status-Flag zurücksetzen
+            displayText = "Press Space";
+            isSpacePressed = false;
 
-            repaint(); // Neu zeichnen, um den neuen Zustand anzuzeigen
+            listBox.updateContent(); // Aktualisieren der ListBox
+            repaint();
         }
     }
 }
 
 void SimpleAudioProcessorEditor::focusGained(juce::Component::FocusChangeType)
 {
-    if (textEditor.getText() == "Bitte Text eingeben...") // Prüfen, ob der Standardtext noch vorhanden ist
+    if (textEditor.getText() == "Bitte Text eingeben...")
     {
-        textEditor.clear(); // Textfeld leeren
+        textEditor.clear();
     }
 }

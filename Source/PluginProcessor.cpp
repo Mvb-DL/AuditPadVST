@@ -2,7 +2,7 @@
 #include "PluginEditor.h"
 #include <algorithm>
 
-// Constructor of SimpleAudioProcessor
+// Konstruktor des SimpleAudioProcessor
 SimpleAudioProcessor::SimpleAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()
@@ -15,42 +15,43 @@ SimpleAudioProcessor::SimpleAudioProcessor()
 {
 }
 
-// Destructor of SimpleAudioProcessor
+// Destruktor des SimpleAudioProcessor
 SimpleAudioProcessor::~SimpleAudioProcessor() {}
 
-// Returns the name of the plugin
+// Gibt den Namen des Plugins zurück
 const juce::String SimpleAudioProcessor::getName() const {
     return JucePlugin_Name;
 }
 
-// MIDI related functions
+// MIDI-bezogene Funktionen
 bool SimpleAudioProcessor::acceptsMidi() const { return false; }
 bool SimpleAudioProcessor::producesMidi() const { return false; }
 bool SimpleAudioProcessor::isMidiEffect() const { return false; }
 double SimpleAudioProcessor::getTailLengthSeconds() const { return 0.0; }
 
-// Program related functions
+// Programmbezogene Funktionen
 int SimpleAudioProcessor::getNumPrograms() { return 1; }
 int SimpleAudioProcessor::getCurrentProgram() { return 0; }
 void SimpleAudioProcessor::setCurrentProgram(int) {}
 const juce::String SimpleAudioProcessor::getProgramName(int) { return {}; }
 void SimpleAudioProcessor::changeProgramName(int, const juce::String&) {}
 
-// Prepare the processor before playback starts
+// Vorbereitung des Prozessors vor der Wiedergabe
 void SimpleAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    // Preparation before playback
+    // Hier können Sie Code zur Vorbereitung vor der Wiedergabe hinzufügen
 }
 
-// Release resources when the plugin is no longer in use
+// Freigabe von Ressourcen, wenn das Plugin nicht mehr verwendet wird
 void SimpleAudioProcessor::releaseResources() {
-    // Resource release, e.g., when closing
+    // Hier können Sie Code zur Freigabe von Ressourcen hinzufügen
 }
 
-// Check if the bus layout is supported
+// Überprüfen, ob das Bus-Layout unterstützt wird
 bool SimpleAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
 #if JucePlugin_IsMidiEffect
     return true;
 #else
+    // Unterstützt nur Mono- oder Stereoausgabe
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
         && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
@@ -59,101 +60,85 @@ bool SimpleAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) co
 #endif
 }
 
-// Process the audio block
+// Verarbeiten des Audio-Blocks
 void SimpleAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // Clear the output buffer if there are no input channels
+    // Leeren der Ausgabekanäle, wenn keine Eingabekanäle vorhanden sind
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    // Process each input channel
+    // Verarbeitung der Audiodaten
     for (int channel = 0; channel < totalNumInputChannels; ++channel) {
         auto* channelData = buffer.getWritePointer(channel);
-        // Process audio data here
+        // Hier kann die Audiobearbeitung erfolgen
     }
 }
 
-// Return whether the processor has an editor
+// Gibt zurück, ob der Prozessor einen Editor hat
 bool SimpleAudioProcessor::hasEditor() const { return true; }
 
-// Create the editor for the plugin
+// Erzeugt den Editor für das Plugin
 juce::AudioProcessorEditor* SimpleAudioProcessor::createEditor() {
     return new SimpleAudioProcessorEditor(*this);
 }
 
-// Save the state of the plugin
+// Speichern des Zustands des Plugins
 void SimpleAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
-    // Save plugin state (add your state saving logic here if needed)
+    // Hier kann der Zustand des Plugins gespeichert werden
 }
 
-// Load the state of the plugin
+// Laden des Zustands des Plugins
 void SimpleAudioProcessor::setStateInformation(const void* data, int sizeInBytes) {
-    // Load plugin state (add your state loading logic here if needed)
+    // Hier kann der Zustand des Plugins geladen werden
 }
 
-
-// Retrieve the current time in seconds from the DAW's playhead
-double SimpleAudioProcessor::getCurrentTimeInSeconds() const
-{
-    if (auto* playHead = getPlayHead())  // Überprüfen, ob ein Playhead vorhanden ist
-    {
-        if (auto positionInfo = playHead->getPosition())  // Abrufen der PositionInfo über std::optional
-        {
-            if (positionInfo->getTimeInSeconds())  // Überprüfen, ob timeInSeconds vorhanden ist
-                return *positionInfo->getTimeInSeconds();  // Optional-Value dereferenzieren und zurückgeben
+// Abfragen der aktuellen Zeit in Sekunden von der DAW's Playhead
+double SimpleAudioProcessor::getCurrentTimeInSeconds() const {
+    if (auto* playHead = getPlayHead()) {
+        if (auto positionInfo = playHead->getPosition()) {
+            if (positionInfo->getTimeInSeconds()) {
+                return *positionInfo->getTimeInSeconds();  // Gibt die Zeit in Sekunden zurück
+            }
         }
     }
-
-    return 0.0;  // Standardwert zurückgeben, wenn kein Playhead oder keine PositionInfo verfügbar ist
+    return 0.0;  // Standardwert zurückgeben, wenn keine Zeitinformationen verfügbar sind
 }
 
-// Retrieve the current sample position from the DAW's playhead
-int SimpleAudioProcessor::getCurrentSamples() const
-{
-    if (auto* playHead = getPlayHead())  // Überprüfen, ob ein Playhead vorhanden ist
-    {
-        if (auto positionInfo = playHead->getPosition())  // Abrufen der PositionInfo über std::optional
-        {
-            if (positionInfo->getTimeInSamples())  // Überprüfen, ob timeInSamples vorhanden ist
-                return static_cast<int>(*positionInfo->getTimeInSamples());  // Optional-Value dereferenzieren und zurückgeben
+// Abfragen der aktuellen Sample-Position von der DAW's Playhead
+int SimpleAudioProcessor::getCurrentSamples() const {
+    if (auto* playHead = getPlayHead()) {
+        if (auto positionInfo = playHead->getPosition()) {
+            if (positionInfo->getTimeInSamples()) {
+                return static_cast<int>(*positionInfo->getTimeInSamples());  // Gibt die Sample-Position zurück
+            }
         }
     }
-
-    return 0;  // Standardwert zurückgeben, wenn kein Playhead oder keine PositionInfo verfügbar ist
+    return 0;  // Standardwert zurückgeben, wenn keine Sample-Informationen verfügbar sind
 }
 
-
-
-// Add a timestamp with text to the list
-void SimpleAudioProcessor::addTimestampWithText(double timeInSeconds, int timeInSamples, const juce::String& text)
-{
-    // Add elements to the list using emplace_back
+// Hinzufügen eines Zeitstempels mit Text zur Liste
+void SimpleAudioProcessor::addTimestampWithText(double timeInSeconds, int timeInSamples, const juce::String& text) {
     timestampTextList.emplace_back(timeInSeconds, timeInSamples, text);
 }
 
-// Get all timestamps with their corresponding text
-std::vector<std::tuple<double, int, juce::String>> SimpleAudioProcessor::getAllTimestampWithText() const
-{
+// Abfragen aller Zeitstempel mit den zugehörigen Texten
+std::vector<std::tuple<double, int, juce::String>> SimpleAudioProcessor::getAllTimestampWithText() const {
     return timestampTextList;
 }
 
-// Get all timestamps (time only)
-std::vector<double> SimpleAudioProcessor::getAllTimestamps() const
-{
+// Abfragen aller Zeitstempel (nur Zeit)
+std::vector<double> SimpleAudioProcessor::getAllTimestamps() const {
     std::vector<double> timestamps;
-
-    for (const auto& tuple : timestampTextList)
-    {
-        timestamps.push_back(std::get<0>(tuple)); // Access the first element of the std::tuple
+    for (const auto& tuple : timestampTextList) {
+        timestamps.push_back(std::get<0>(tuple)); // Zugriff auf das erste Element des std::tuple
     }
     return timestamps;
 }
 
-// Create an instance of the audio processor
-juce::AudioProcessor* createPluginFilter()
-{
+// Erzeugt eine Instanz des Audio-Prozessors
+juce::AudioProcessor* createPluginFilter() {
     return new SimpleAudioProcessor();
 }

@@ -2,34 +2,33 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "TimestampListBoxModel.h"  // Füge dies hinzu
 
 class SimpleAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                   public juce::Button::Listener,       // Listener für den Button hinzufügen
-                                   public juce::TextEditor::Listener    // Listener für den TextEditor hinzufügen
+                                   public juce::Button::Listener,       
+                                   public juce::TextEditor::Listener    
 {
 public:
     SimpleAudioProcessorEditor(SimpleAudioProcessor&);
     ~SimpleAudioProcessorEditor() override;
 
-    // JUCE-Basisfunktionen überschreiben
     void paint(juce::Graphics&) override;
     void resized() override;
     bool keyPressed(const juce::KeyPress& key) override;
-
-    // Listener-Funktion für Button-Events
     void buttonClicked(juce::Button* button) override;
-
-    // Listener-Funktion für TextEditor-Events
     void focusGained(juce::Component::FocusChangeType) override;
 
 private:
-    SimpleAudioProcessor& audioProcessor;   // Referenz auf den Audio-Prozessor
-    juce::String displayText;               // Text zur Anzeige
-    bool isSpacePressed = false;            // Status-Flag für die Leertaste
+    SimpleAudioProcessor& audioProcessor;
+    juce::String displayText;
+    bool isSpacePressed = false;
 
-    juce::TextEditor textEditor;            // Textfeld zur Eingabe
-    juce::TextButton saveButton {"Speichern"};  // Button zum Speichern der Eingabe
-    juce::Label displayLabel;               // Label zur Anzeige des gespeicherten Zeitstempels und Textes
+    juce::TextEditor textEditor;
+    juce::TextButton saveButton {"Speichern"};
+    juce::Label displayLabel;
+
+    juce::ListBox listBox;
+    TimestampListBoxModel listBoxModel;  // Verwende die vollständige Klasse
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SimpleAudioProcessorEditor)
 };

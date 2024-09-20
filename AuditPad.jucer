@@ -5,6 +5,8 @@
               pluginFormats="buildStandalone,buildVST3" cppLanguageStandard="latest">
   <MAINGROUP id="SXEFKN" name="AuditPad">
     <GROUP id="{5B54B82B-A71A-9226-5542-9AB7A72AEF0B}" name="Source">
+      <FILE id="smFQuq" name="TimestampListBoxModel.h" compile="0" resource="0"
+            file="Source/TimestampListBoxModel.h"/>
       <FILE id="lt8TiP" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="CCgPdy" name="PluginProcessor.h" compile="0" resource="0"

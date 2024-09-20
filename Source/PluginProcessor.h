@@ -36,22 +36,17 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    // Custom methods
+    // Custom methods to get information from the playhead
     double getCurrentTimeInSeconds() const;  // Retrieves the current time in seconds from the DAW's playhead
     int getCurrentSamples() const;           // Retrieves the current sample position from the DAW's playhead
 
-    // Adds a timestamp with associated text to the list
+    // Methods to manage timestamps and text entries
     void addTimestampWithText(double timeInSeconds, int timeInSamples, const juce::String& text);
-
-    // Retrieves all timestamps (only time values)
-    std::vector<double> getAllTimestamps() const;
-
-    // Retrieves all timestamps with associated text
-    std::vector<std::tuple<double, int, juce::String>> getAllTimestampWithText() const;
+    std::vector<double> getAllTimestamps() const;  // Retrieves all timestamps (time only)
+    std::vector<std::tuple<double, int, juce::String>> getAllTimestampWithText() const;  // Retrieves all timestamps with associated text
 
 private:
-    // List to store timestamps and associated texts
-    std::vector<std::tuple<double, int, juce::String>> timestampTextList;
+    std::vector<std::tuple<double, int, juce::String>> timestampTextList;  // List to store timestamps and associated texts
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SimpleAudioProcessor)
 };
